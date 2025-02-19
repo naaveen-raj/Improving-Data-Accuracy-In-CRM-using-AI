@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM AI Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+        .navbar { background: #2c3e50; color: white; padding: 15px; text-align: center; }
+        .navbar a { color: white; text-decoration: none; margin: 0 15px; font-weight: bold; }
+        .container { display: flex; flex-wrap: wrap; justify-content: space-between; padding: 20px; }
+        .section { width: 48%; background: #f8f9fa; padding: 20px; border-radius: 8px; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .chart-container { display: flex; justify-content: space-between; }
+        canvas { max-width: 100%; }
+        .table-container { width: 100%; background: white; padding: 20px; border-radius: 8px; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+        .bar { height: 20px; background: #3498db; text-align: right; color: white; padding-right: 5px; border-radius: 4px; }
+        .footer { background: #2c3e50; color: white; text-align: center; padding: 10px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="#">Home</a>
+        <a href="#">Predict</a>
+        <a href="#">Analysis</a>
+        <a href="#">Value to CRM</a>
+        <a href="#">CRM Space</a>
+    </div>
+
+    <div class="container">
+        <div class="crm-section">
+            <h3>CRM Prediction</h3>
+            <input type="number" id="MonthlyCharges" placeholder="Monthly Charges"><br>
+            <input type="number" id="SeniorCitizen" placeholder="Senior Citizen (0 or 1)"><br>
+            <input type="number" id="tenure" placeholder="Tenure"><br>
+            <input type="number" id="TotalCharges" placeholder="Total Charges"><br>
+            <button onclick="predict()">Predict</button>
+            <p id="result"></p>
+        </div>
+    
+        <div class="crm-section" id="dashboard">
+            <h3>CRM Dashboard</h3>
+            <p>Loading...</p>
+        </div>
+    </div>
+    
+    <style>
+        .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 20px;
+            padding: 20px;
+        }
+    
+        .crm-section {
+            flex: 1;
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            font-size: 16px;
+        }
+    
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+    
+
+    <!-- Charts Section -->
+    <div class="chart-container">
+        <div class="section">
+            <h3>CRM Data Distribution</h3>
+            <canvas id="pieChart"></canvas>
+        </div>
+        <div class="section">
+            <h3>Customer Growth</h3>
+            <canvas id="barChart"></canvas>
+        </div>
+    </div>
+
+    <!-- CRM Data Table -->
+    <div class="table-container">
+        <h3>Customer Data Overview</h3>
+        <table>
+            <tr>
+                <th>Category</th>
+                <th>Count</th>
+                <th>Visual</th>
+            </tr>
+            <tr>
+                <td>Active Customers</td>
+                <td>500</td>
+                <td><div class="bar" style="width: 50%;">500</div></td>
+            </tr>
+            <tr>
+                <td>Churned Customers</td>
+                <td>200</td>
+                <td><div class="bar" style="width: 20%;">200</div></td>
+            </tr>
+            <tr>
+                <td>New Customers</td>
+                <td>300</td>
+                <td><div class="bar" style="width: 30%;">300</div></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="footer">
+        <H1>Team Members: KLS VISHWANATHRAO DESPHANDE INSTIUTE OF TECHNOLOGY</H1>
+            
+            <p>         1) Name: Manoj F Patil 
+                        CAN ID Number: CAN_33779385
+            <p>            2) Name: Naveenraj R N 
+                        CAN ID Number: CAN_33737391 
+                        
+            <p>            3) Name: Sanket N Shinde 
+                        CAN ID Number: CAN_33736944
+                        
+            <p>            4) Name: Vilas N Bhat 
+                        CAN ID Number: CAN_33778602 </p></p>
+    </div>
+
+    <script>
+        async function predict() {
+            const MonthlyCharges = parseFloat(document.getElementById("MonthlyCharges").value);
+            const SeniorCitizen = parseInt(document.getElementById("SeniorCitizen").value);
+            const tenure = parseInt(document.getElementById("tenure").value);
+            const TotalCharges = parseFloat(document.getElementById("TotalCharges").value);
+
+            const response = await fetch('/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ MonthlyCharges, SeniorCitizen, tenure, TotalCharges }),
+            });
+
+            const data = await response.json();
+            document.getElementById("result").innerText = JSON.stringify(data, null, 2);
+        }
+
+        async function loadDashboard() {
+            try {
+                const response = await fetch('/dashboard');
+                const data = await response.json();
+                
+                document.getElementById("dashboard").innerHTML = `
+                    <h3>CRM Dashboard</h3>
+                    <p><strong>Total Customers:</strong> ${data.total_customers ?? 'N/A'}</p>
+                    <p><strong>Churn Rate:</strong> ${data.churn_rate ?? 'N/A'}%</p>
+                    <p><strong>Revenue:</strong> $${data.total_revenue ?? 'N/A'}</p>
+                `;
+            } catch (error) {
+                document.getElementById("dashboard").innerHTML = `<p style="color: red;">Failed to load dashboard</p>`;
+            }
+        }
+
+        function loadCharts() {
+            new Chart(document.getElementById("pieChart"), {
+                type: 'pie',
+                data: {
+                    labels: ["Active", "Churned", "New"],
+                    datasets: [{
+                        data: [500, 200, 300],
+                        backgroundColor: ["#3498db", "#e74c3c", "#2ecc71"]
+                    }]
+                }
+            });
+
+            new Chart(document.getElementById("barChart"), {
+                type: 'bar',
+                data: {
+                    labels: ["Jan", "Feb", "Mar", "Apr", "May"],
+                    datasets: [{
+                        label: "Customers",
+                        data: [100, 120, 150, 130, 170],
+                        backgroundColor: "#f39c12"
+                    }]
+                }
+            });
+        }
+
+        loadDashboard();
+        loadCharts();
+    </script>
+</body>
+</html>
